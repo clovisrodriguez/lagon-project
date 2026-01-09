@@ -3,12 +3,21 @@
 // - WhatsApp link wiring (placeholder by default)
 // - Plan toggle
 
-const DEFAULT_WA_LINK = "#"; // TODO: replace with final https://wa.me/<E164>?text=<encoded>
+const WA_NUMBER_E164 = "15557581468";
+const WA_PREFILL_MESSAGE =
+  "Hola Narda, quiero información de Peace Lagoons. ¿Me compartes disponibilidad y opciones de unidades (Studio/1BR/2BR) y cómo sería el proceso de compra desde Colombia?";
+
+function buildWhatsAppLink() {
+  const base = `https://wa.me/${WA_NUMBER_E164}`;
+  const text = encodeURIComponent(WA_PREFILL_MESSAGE);
+  return `${base}?text=${text}`;
+}
 
 function wireWhatsAppLinks() {
+  const waLink = buildWhatsAppLink();
   const links = document.querySelectorAll("[data-wa]");
   links.forEach((a) => {
-    a.setAttribute("href", DEFAULT_WA_LINK);
+    a.setAttribute("href", waLink);
     a.setAttribute("target", "_blank");
   });
 }
@@ -58,5 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
   setupReveals();
   setupPlanToggle();
 });
+
 
 
