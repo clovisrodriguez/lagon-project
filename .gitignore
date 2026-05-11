@@ -1,0 +1,4 @@
+.DS_Store
+node_modules/
+scripts/source-html/
+scripts/local-photos/

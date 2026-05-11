@@ -1,22 +1,25 @@
-// Peace Lagoons landing page (vanilla)
+// Narda Valderrama — Apartments landing
+// - Per-listing WhatsApp prefill (via window.__LISTING__ if set)
 // - Smooth section reveals
-// - WhatsApp link wiring (placeholder by default)
-// - Plan toggle
+// - Detail-page gallery (main + thumbs + arrows + keyboard)
 
 const WA_NUMBER_E164 = "15557581468";
-const WA_PREFILL_MESSAGE =
-  "Hola Narda, quiero información de Peace Lagoons. ¿Me compartes disponibilidad y opciones de unidades (Studio/1BR/2BR) y cómo sería el proceso de compra desde Colombia?";
 
 function buildWhatsAppLink() {
   const base = `https://wa.me/${WA_NUMBER_E164}`;
-  const text = encodeURIComponent(WA_PREFILL_MESSAGE);
-  return `${base}?text=${text}`;
+  const listing = window.__LISTING__;
+  let text;
+  if (listing && listing.id) {
+    text = `Hola Narda, me interesa "${listing.title}" (id ${listing.id}). ¿Está disponible? ¿Me compartes más información?`;
+  } else {
+    text = "Hola Narda, me interesa uno de los inmuebles del catálogo. ¿Me compartes más información?";
+  }
+  return `${base}?text=${encodeURIComponent(text)}`;
 }
 
 function wireWhatsAppLinks() {
   const waLink = buildWhatsAppLink();
-  const links = document.querySelectorAll("[data-wa]");
-  links.forEach((a) => {
+  document.querySelectorAll("[data-wa]").forEach((a) => {
     a.setAttribute("href", waLink);
     a.setAttribute("target", "_blank");
   });
@@ -28,7 +31,6 @@ function setupReveals() {
     els.forEach((el) => el.classList.add("is-visible"));
     return;
   }
-
   const io = new IntersectionObserver(
     (entries) => {
       entries.forEach((e) => {
@@ -40,33 +42,44 @@ function setupReveals() {
     },
     { threshold: 0.12 }
   );
-
   els.forEach((el) => io.observe(el));
 }
 
-function setupPlanToggle() {
-  const btn = document.getElementById("togglePlan");
-  const extra = document.getElementById("planExtra");
-  if (!btn || !extra) return;
+function setupGallery() {
+  const main = document.getElementById("galleryMain");
+  const photos = window.__GALLERY__;
+  if (!main || !photos || photos.length <= 1) return;
 
-  btn.addEventListener("click", () => {
-    const isHidden = extra.hasAttribute("hidden");
-    if (isHidden) {
-      extra.removeAttribute("hidden");
-      btn.textContent = "Ocultar plano adicional";
-      extra.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      extra.setAttribute("hidden", "");
-      btn.textContent = "Ver plano adicional";
+  const thumbs = document.querySelectorAll(".gallery__thumb");
+  let idx = 0;
+
+  function show(i) {
+    idx = (i + photos.length) % photos.length;
+    main.src = photos[idx];
+    thumbs.forEach((t, j) => t.classList.toggle("is-active", j === idx));
+    const active = thumbs[idx];
+    if (active && active.scrollIntoView) {
+      active.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
     }
+  }
+
+  thumbs.forEach((t) => t.addEventListener("click", () => show(parseInt(t.dataset.idx, 10))));
+  document.querySelector(".gallery__nav--prev")?.addEventListener("click", () => show(idx - 1));
+  document.querySelector(".gallery__nav--next")?.addEventListener("click", () => show(idx + 1));
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") show(idx - 1);
+    else if (e.key === "ArrowRight") show(idx + 1);
+  });
+
+  main.style.cursor = "zoom-in";
+  main.addEventListener("click", () => {
+    window.open(photos[idx], "_blank", "noopener");
   });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   wireWhatsAppLinks();
   setupReveals();
-  setupPlanToggle();
+  setupGallery();
 });
-
-
-
