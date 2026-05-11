@@ -181,7 +181,7 @@ export function renderDetail(listing) {
   const galleryThumbs = photos
     .map(
       (p, i) =>
-        `<button class="gallery__thumb${i === 0 ? ' is-active' : ''}" data-idx="${i}" aria-label="Foto ${i + 1}"><img src="${escapeHtml(p)}" alt="" loading="lazy" decoding="async"></button>`
+        `<button class="gallery__thumb${i === 0 ? ' is-active' : ''}" data-idx="${i}" aria-label="Foto ${i + 1}"><img src="${escapeHtml(p)}" alt="" decoding="async"></button>`
     )
     .join('')
 

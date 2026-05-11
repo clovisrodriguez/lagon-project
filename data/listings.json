@@ -1,5 +1,40 @@
 [
   {
+    "id": "9497507",
+    "title": "Casa Campestre en Escobero, Envigado",
+    "raw_title": "EXCLUSIVIDAD | DISEÑO| CONFORT 2 CASAS EN UNA - $7.500.000.000 COP",
+    "type": "Casa Campestre",
+    "city": "Envigado",
+    "neighborhood": "Escobero",
+    "price_cop": 7500000000,
+    "bedrooms": null,
+    "baths": null,
+    "garage": null,
+    "area_m2": null,
+    "estrato": null,
+    "floor": null,
+    "condition": null,
+    "admin_fee": null,
+    "description": "",
+    "agent": null,
+    "wasi_url": "https://luzesinmobiliarias.com/casa-campestre-venta-escobero-envigado/9497507",
+    "cover": "/assets/listings/9497507/cover.jpg",
+    "photos": [
+      "/assets/listings/9497507/01.jpg",
+      "/assets/listings/9497507/02.jpg",
+      "/assets/listings/9497507/03.jpg",
+      "/assets/listings/9497507/04.jpg",
+      "/assets/listings/9497507/05.jpg",
+      "/assets/listings/9497507/06.jpg",
+      "/assets/listings/9497507/07.jpg",
+      "/assets/listings/9497507/08.jpg",
+      "/assets/listings/9497507/09.jpg",
+      "/assets/listings/9497507/10.jpg",
+      "/assets/listings/9497507/11.jpg",
+      "/assets/listings/9497507/12.jpg"
+    ]
+  },
+  {
     "id": "9944180",
     "title": "Casa Campestre en Escobero, Envigado",
     "raw_title": "ESCOBERO Y EXCLUSIVIDAD EN 2000MTS2 | 5 HAB +",
@@ -34,7 +69,8 @@
       "/assets/listings/9944180/12.jpg",
       "/assets/listings/9944180/13.jpg",
       "/assets/listings/9944180/14.jpg",
-      "/assets/listings/9944180/15.jpg"
+      "/assets/listings/9944180/15.jpg",
+      "/assets/listings/9944180/16.jpg"
     ]
   },
   {
@@ -83,12 +119,13 @@
       "/assets/listings/9803984/23.jpg",
       "/assets/listings/9803984/24.jpg",
       "/assets/listings/9803984/25.jpg",
-      "/assets/listings/9803984/26.jpg"
+      "/assets/listings/9803984/26.jpg",
+      "/assets/listings/9803984/27.jpg"
     ]
   },
   {
     "id": "9956202",
-    "title": "Estrena y Conecta con Tu Proposito",
+    "title": "Casa Campestre en Escobero, Envigado",
     "raw_title": "ESTRENA Y CONECTA CON TU PROPOSITO - $2.950.000.000 COP",
     "type": "Casa Campestre",
     "city": "Envigado",
@@ -146,7 +183,7 @@
   },
   {
     "id": "9949944",
-    "title": "Lote en El Escobero",
+    "title": "Lote en Escobero, Envigado",
     "raw_title": "LOTE EN EL ESCOBERO | PARCELACION",
     "type": "Lote",
     "city": "Envigado",
@@ -173,12 +210,13 @@
       "/assets/listings/9949944/06.jpg",
       "/assets/listings/9949944/07.jpg",
       "/assets/listings/9949944/08.jpg",
-      "/assets/listings/9949944/09.jpg"
+      "/assets/listings/9949944/09.jpg",
+      "/assets/listings/9949944/10.jpg"
     ]
   },
   {
     "id": "9956007",
-    "title": "Apartamento en Venta Envigado",
+    "title": "Apartamento en Cumbres, Envigado",
     "raw_title": "Apartamento en Venta Envigado",
     "type": "Apartamento",
     "city": "Envigado",
@@ -207,7 +245,8 @@
       "/assets/listings/9956007/08.jpg",
       "/assets/listings/9956007/09.jpg",
       "/assets/listings/9956007/10.jpg",
-      "/assets/listings/9956007/11.jpg"
+      "/assets/listings/9956007/11.jpg",
+      "/assets/listings/9956007/12.jpg"
     ]
   },
   {
@@ -248,7 +287,8 @@
       "/assets/listings/9914928/15.jpg",
       "/assets/listings/9914928/16.jpg",
       "/assets/listings/9914928/17.jpg",
-      "/assets/listings/9914928/18.jpg"
+      "/assets/listings/9914928/18.jpg",
+      "/assets/listings/9914928/19.jpg"
     ]
   },
   {
@@ -295,7 +335,8 @@
       "/assets/listings/9881204/21.jpg",
       "/assets/listings/9881204/22.jpg",
       "/assets/listings/9881204/23.jpg",
-      "/assets/listings/9881204/24.jpg"
+      "/assets/listings/9881204/24.jpg",
+      "/assets/listings/9881204/25.jpg"
     ]
   },
   {
@@ -330,7 +371,8 @@
       "/assets/listings/9744624/09.jpg",
       "/assets/listings/9744624/10.jpg",
       "/assets/listings/9744624/11.jpg",
-      "/assets/listings/9744624/12.jpg"
+      "/assets/listings/9744624/12.jpg",
+      "/assets/listings/9744624/13.jpg"
     ]
   },
   {
@@ -385,41 +427,8 @@
       "/assets/listings/9124532/29.jpg",
       "/assets/listings/9124532/30.jpg",
       "/assets/listings/9124532/31.jpg",
-      "/assets/listings/9124532/32.jpg"
-    ]
-  },
-  {
-    "id": "9497507",
-    "title": "Exclusividad",
-    "raw_title": "EXCLUSIVIDAD | DISEÑO| CONFORT 2 CASAS EN UNA - $7.500.000.000 COP",
-    "type": "Casa Campestre",
-    "city": "Medellín",
-    "neighborhood": "",
-    "price_cop": 7500000000,
-    "bedrooms": null,
-    "baths": null,
-    "garage": null,
-    "area_m2": null,
-    "estrato": null,
-    "floor": null,
-    "condition": null,
-    "admin_fee": null,
-    "description": "",
-    "agent": null,
-    "wasi_url": "https://luzesinmobiliarias.com/casa-campestre-venta-escobero-envigado/9497507",
-    "cover": "/assets/listings/9497507/cover.jpg",
-    "photos": [
-      "/assets/listings/9497507/01.jpg",
-      "/assets/listings/9497507/02.jpg",
-      "/assets/listings/9497507/03.jpg",
-      "/assets/listings/9497507/04.jpg",
-      "/assets/listings/9497507/05.jpg",
-      "/assets/listings/9497507/06.jpg",
-      "/assets/listings/9497507/07.jpg",
-      "/assets/listings/9497507/08.jpg",
-      "/assets/listings/9497507/09.jpg",
-      "/assets/listings/9497507/10.jpg",
-      "/assets/listings/9497507/11.jpg"
+      "/assets/listings/9124532/32.jpg",
+      "/assets/listings/9124532/33.jpg"
     ]
   },
   {
@@ -476,7 +485,8 @@
       "/assets/listings/9955123/31.jpg",
       "/assets/listings/9955123/32.jpg",
       "/assets/listings/9955123/33.jpg",
-      "/assets/listings/9955123/34.jpg"
+      "/assets/listings/9955123/34.jpg",
+      "/assets/listings/9955123/35.jpg"
     ]
   },
   {
@@ -531,12 +541,13 @@
       "/assets/listings/9248672/29.jpg",
       "/assets/listings/9248672/30.jpg",
       "/assets/listings/9248672/31.jpg",
-      "/assets/listings/9248672/32.jpg"
+      "/assets/listings/9248672/32.jpg",
+      "/assets/listings/9248672/33.jpg"
     ]
   },
   {
     "id": "9849391",
-    "title": "Apto Los Balsos",
+    "title": "Apartamento en Poblado, Medellín",
     "raw_title": "APTO Los Balsos | 3 Hab + Servicio | Estudio | Vista 180° | 2 Garajes",
     "type": "Apartamento",
     "city": "Medellín",
@@ -581,7 +592,8 @@
       "/assets/listings/9849391/24.jpg",
       "/assets/listings/9849391/25.jpg",
       "/assets/listings/9849391/26.jpg",
-      "/assets/listings/9849391/27.jpg"
+      "/assets/listings/9849391/27.jpg",
+      "/assets/listings/9849391/28.jpg"
     ]
   },
   {
@@ -620,12 +632,13 @@
       "/assets/listings/9949163/13.jpg",
       "/assets/listings/9949163/14.jpg",
       "/assets/listings/9949163/15.jpg",
-      "/assets/listings/9949163/16.jpg"
+      "/assets/listings/9949163/16.jpg",
+      "/assets/listings/9949163/17.jpg"
     ]
   },
   {
     "id": "9744741",
-    "title": "Apto 87m²-144m² Terraza Cubierta Zúñiga- Envigado",
+    "title": "Apartamento en Medellín",
     "raw_title": "Venta Apto 87m²-144m² terraza cubierta Zúñiga- Envigado",
     "type": "Apartamento",
     "city": "Medellín",
@@ -667,7 +680,8 @@
       "/assets/listings/9744741/21.jpg",
       "/assets/listings/9744741/22.jpg",
       "/assets/listings/9744741/23.jpg",
-      "/assets/listings/9744741/24.jpg"
+      "/assets/listings/9744741/24.jpg",
+      "/assets/listings/9744741/25.jpg"
     ]
   },
   {
@@ -712,7 +726,7 @@
   },
   {
     "id": "9909845",
-    "title": "Loft en Venta",
+    "title": "Aparta-estudio en Poblado, Medellín",
     "raw_title": "Loft en Venta | Ubicación Premium | Ideal Inversión Estable",
     "type": "Aparta-estudio",
     "city": "Medellín",
@@ -744,7 +758,8 @@
       "/assets/listings/9909845/11.jpg",
       "/assets/listings/9909845/12.jpg",
       "/assets/listings/9909845/13.jpg",
-      "/assets/listings/9909845/14.jpg"
+      "/assets/listings/9909845/14.jpg",
+      "/assets/listings/9909845/15.jpg"
     ]
   },
   {
@@ -774,12 +789,13 @@
       "/assets/listings/9964216/04.jpg",
       "/assets/listings/9964216/05.jpg",
       "/assets/listings/9964216/06.jpg",
-      "/assets/listings/9964216/07.jpg"
+      "/assets/listings/9964216/07.jpg",
+      "/assets/listings/9964216/08.jpg"
     ]
   },
   {
     "id": "9945697",
-    "title": "Mansion de Lujo en Sabaneta, Confort y Exclusividad",
+    "title": "Casa Campestre en La Tuna, Sabaneta",
     "raw_title": "MANSION DE LUJO EN SABANETA, CONFORT Y EXCLUSIVIDAD",
     "type": "Casa Campestre",
     "city": "Sabaneta",
@@ -821,7 +837,8 @@
       "/assets/listings/9945697/21.jpg",
       "/assets/listings/9945697/22.jpg",
       "/assets/listings/9945697/23.jpg",
-      "/assets/listings/9945697/24.jpg"
+      "/assets/listings/9945697/24.jpg",
+      "/assets/listings/9945697/25.jpg"
     ]
   }
 ]

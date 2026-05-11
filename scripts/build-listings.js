@@ -113,18 +113,31 @@ function getDescription(html) {
   return decodeEntities(text)
 }
 
-function buildTransformerUrl(key, width = 979, height = 743) {
+function buildTransformerUrl(key, width = 1200, height = 900) {
+  // fit:cover crops to fill — no white letterbox. Aspect 4:3.
   const spec = {
     bucket: 'staticw',
     key,
     edits: {
       normalise: true,
       rotate: 0,
-      resize: { width, height, fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } },
+      resize: { width, height, fit: 'cover' },
     },
   }
   const b64 = Buffer.from(JSON.stringify(spec)).toString('base64')
   return `https://image.wasi.co/${b64}`
+}
+
+function reframeAsCover(url) {
+  // Take a wasi transformer URL (possibly fit:contain with white background) and
+  // rebuild it as fit:cover for the listing display. Pass-through for non-transformer URLs.
+  if (!url.startsWith('https://image.wasi.co/')) return url
+  const b64 = url.split('/').pop()
+  try {
+    const json = JSON.parse(Buffer.from(b64, 'base64').toString('utf8'))
+    if (json?.key) return buildTransformerUrl(json.key)
+  } catch {}
+  return url
 }
 
 function getImageUrls(html) {
@@ -136,43 +149,32 @@ function getImageUrls(html) {
   const items = []
   const smallByKey = new Map() // key → original URL (for fallback width upgrade)
 
-  // 1) image.wasi.co transformer URLs
+  // Collect unique source keys from any URL form, then rebuild as fit:cover.
+  // This avoids the white letterbox from fit:contain in the source URLs.
+
+  // 1) image.wasi.co transformer URLs (encode key in base64)
   for (const m of html.matchAll(/https:\/\/image\.wasi\.co\/[A-Za-z0-9+/=_-]+/g)) {
     const url = m[0]
     const b64 = url.split('/').pop()
     try {
       const json = JSON.parse(Buffer.from(b64, 'base64').toString('utf8'))
-      const w = json?.edits?.resize?.width || 0
       const key = json?.key
-      if (!key) continue
-      if (w >= 600) {
-        if (!seenKey.has(key)) {
-          seenKey.add(key)
-          items.push(url)
-        }
-      } else if (!smallByKey.has(key)) {
-        smallByKey.set(key, url)
+      if (key && !seenKey.has(key)) {
+        seenKey.add(key)
+        items.push(buildTransformerUrl(key))
       }
-    } catch {
-      // ignore malformed
-    }
+    } catch {}
   }
 
-  // 1b) Promote remaining small-only keys to a freshly-built large URL
-  for (const [key] of smallByKey) {
-    if (seenKey.has(key)) continue
-    seenKey.add(key)
-    items.push(buildTransformerUrl(key))
-  }
-
-  // 2) images.wasi.co/inmuebles direct URLs (luzes format) — by file name
+  // 2) images.wasi.co/inmuebles direct URLs (luzes format)
   for (const m of html.matchAll(/https:\/\/images\.wasi\.co\/inmuebles\/[^"'\s)]+\.(?:jpe?g|png|webp)/gi)) {
     const url = m[0]
-    const name = url.split('/').pop()
-    const key = `inmuebles/${name}`
+    const fname = url.split('/').pop()
+    const key = `inmuebles/${fname}`
     if (!seenKey.has(key)) {
       seenKey.add(key)
-      items.push(url)
+      // Reframe through the transformer for consistent crop
+      items.push(buildTransformerUrl(key))
     }
   }
 
@@ -203,33 +205,68 @@ function deriveType(specType, ogUrl, title) {
   return 'Apartamento'
 }
 
-function deriveLocation(specs) {
-  const city = (specs['Ciudad'] || '').replace(/\.$/, '').trim()
-  const zone = (specs['Zona'] || '').trim()
+function deriveLocation(specs, ogUrl) {
+  let city = (specs['Ciudad'] || '').replace(/\.$/, '').trim()
+  let zone = (specs['Zona'] || '').trim()
+
+  // Fallback: parse from og_url slug like:
+  //   .../casa-campestre-venta-escobero-envigado/9497507
+  //   .../apartamento-venta-castropol-medellín/9940181
+  //   .../apartamento-venta-itagui/9124532
+  if ((!city || !zone) && ogUrl) {
+    const m = ogUrl.match(/\/([^/]+)\/\d+\/?$/)
+    if (m) {
+      const slug = m[1].toLowerCase()
+      // Drop type prefix + "venta"/"arriendo"
+      const parts = slug
+        .split('-')
+        .filter(p => !['venta', 'arriendo', 'apartamento', 'apartaestudio', 'loft', 'casa', 'campestre', 'lote', 'terreno'].includes(p))
+      // Last 1-2 parts are typically neighborhood + city
+      if (parts.length >= 2 && !city) city = titleCaseSpanish(parts[parts.length - 1])
+      else if (parts.length === 1 && !city) city = titleCaseSpanish(parts[0])
+      if (parts.length >= 2 && !zone) {
+        zone = titleCaseSpanish(parts.slice(0, -1).join(' '))
+      }
+    }
+  }
   return { city: city || 'Medellín', neighborhood: zone || '' }
 }
 
 function deriveDisplayTitle(rawTitle, type, loc) {
-  // Strip emojis, variation selectors, price, then split on pipes/dashes
-  let t = (rawTitle || '')
+  // Prefer structured title "{Type} en {Neighborhood}, {City}" when we have location.
+  // Only use the raw title when it contains a property-type keyword (signal that the
+  // agent wrote a real description) AND it has more than one informative word.
+  const structured = loc.neighborhood
+    ? `${type} en ${loc.neighborhood}, ${loc.city}`
+    : `${type} en ${loc.city}`
+
+  if (!rawTitle) return structured
+
+  let t = rawTitle
     .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F000}-\u{1F02F}]/gu, '')
     .replace(/\$\s*[\d.,]+\s*(?:COP|USD)?/gi, '')
     .replace(/\s+/g, ' ')
     .trim()
-  t = t.split(/\s*[|–]\s*/)[0].trim() // first segment before pipes
-  // Strip leading verbs that don't help ("VENTA DE", "Venta")
+  t = t.split(/\s*[|–]\s*/)[0].trim()
   t = t.replace(/^venta\s+(de\s+)?/i, '').trim()
-  // If still spammy or empty, fallback to "{type} en {neighborhood}, {city}"
-  if (!t || t.length < 6) {
-    if (loc.neighborhood) return `${type} en ${loc.neighborhood}, ${loc.city}`
-    return `${type} en ${loc.city}`
+
+  const lower = t.toLowerCase()
+  const hasTypeKeyword = /(apartamento|aparta-estudio|loft|casa|lote|finca|terreno)/i.test(lower)
+  const wordCount = t.split(/\s+/).filter(Boolean).length
+
+  // Keep raw title only when it has a property keyword AND substance beyond filler.
+  // Generic phrases like "Loft en Venta" don't help — fall back to structured.
+  const fillerWords = new Set(['venta', 'arriendo', 'en', 'de', 'del', 'la', 'el', 'los', 'las', 'y', 'con', 'para'])
+  const meaningfulWordCount = t
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(w => w && !fillerWords.has(w)).length
+
+  if (hasTypeKeyword && meaningfulWordCount >= 3 && t.length >= 12) {
+    if (/^[A-ZÁÉÍÓÚÑ\s\d°²]+$/.test(t) && t.length > 30) return structured
+    return titleCaseSpanish(t)
   }
-  // All-caps spammy titles → also use fallback unless they have decent structure
-  if (/^[A-ZÁÉÍÓÚÑ\s\d°²]+$/.test(t) && t.length > 30) {
-    if (loc.neighborhood) return `${type} en ${loc.neighborhood}, ${loc.city}`
-    return `${type} en ${loc.city}`
-  }
-  return titleCaseSpanish(t)
+  return structured
 }
 
 // ─── Utils ───────────────────────────────────────────────────────────────────
@@ -301,7 +338,7 @@ async function processListing(filename) {
   const imageUrls = getImageUrls(html)
 
   const type = deriveType(specs['Tipo Inmueble'], ogUrl, rawTitle)
-  const location = deriveLocation(specs)
+  const location = deriveLocation(specs, ogUrl)
   const displayTitle = deriveDisplayTitle(rawTitle, type, location)
 
   return {
@@ -357,20 +394,19 @@ async function downloadImages(listing) {
 
   const photos = []
   for (let i = 0; i < urls.length; i++) {
-    const dest = path.join(dir, `${String(i + 1).padStart(2, '0')}.jpg`)
-    if (await exists(dest)) {
-      photos.push(`/assets/listings/${listing.id}/${path.basename(dest)}`)
-      continue
-    }
+    const slot = String(photos.length + 1).padStart(2, '0')
+    const dest = path.join(dir, `${slot}.jpg`)
     try {
       const bytes = await downloadFile(urls[i], dest)
-      if (bytes < 1000) {
+      // Filter tiny/error responses (wasi sometimes returns ~600 byte placeholders)
+      if (bytes < 8000) {
         await fs.unlink(dest)
         continue
       }
       photos.push(`/assets/listings/${listing.id}/${path.basename(dest)}`)
     } catch (e) {
       console.warn(`  ${listing.id}: image ${i + 1} failed:`, e.message)
+      try { await fs.unlink(dest) } catch {}
     }
   }
 
