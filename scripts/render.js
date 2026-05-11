@@ -72,7 +72,7 @@ export function renderIndex(listings) {
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=2026051102" />
   </head>
   <body>
     <a class="skip" href="#listings">Saltar al contenido</a>
@@ -153,7 +153,7 @@ export function renderIndex(listings) {
       WhatsApp
     </a>
 
-    <script src="./app.js" defer></script>
+    <script src="./app.js?v=2026051102" defer></script>
   </body>
 </html>
 `
@@ -209,7 +209,7 @@ export function renderDetail(listing) {
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="../styles.css?v=2026051102" />
   </head>
   <body>
     <a class="skip" href="#detail">Saltar al contenido</a>
@@ -288,7 +288,7 @@ export function renderDetail(listing) {
       })};
       window.__GALLERY__ = ${JSON.stringify(photos)};
     </script>
-    <script src="../app.js" defer></script>
+    <script src="../app.js?v=2026051102" defer></script>
   </body>
 </html>
 `
