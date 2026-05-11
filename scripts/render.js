@@ -1,9 +1,11 @@
 // HTML templates for index page + per-listing detail pages.
 // Pure functions: data in, HTML string out.
 
+const SITE_URL = 'https://nardavalderrama.com'
 const SITE_TITLE = 'Apartamentos en Medellín 2026 | Narda Valderrama'
 const SITE_DESCRIPTION =
   'Inmuebles seleccionados en Medellín y el Valle de Aburrá. Asesoría personalizada por WhatsApp con Narda Valderrama y su equipo.'
+const WHATSAPP_E164 = '+15557581468'
 
 function escapeHtml(s) {
   if (s == null) return ''
@@ -13,6 +15,12 @@ function escapeHtml(s) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
+}
+
+// Safely serialize JSON for embedding inside a <script type="application/ld+json"> tag.
+// Without this, a "</script>" sequence inside any string would break out of the tag.
+function jsonLdSafe(obj) {
+  return JSON.stringify(obj).replace(/<\/(script)/gi, '<\\/$1')
 }
 
 function formatPriceCop(n) {
@@ -54,18 +62,63 @@ function renderCard(listing) {
 
 export function renderIndex(listings) {
   const cards = listings.map(renderCard).join('')
+  // Pick the most expensive listing's cover for og:image — most attractive social preview
+  const heroListing = [...listings].sort((a, b) => (b.price_cop || 0) - (a.price_cop || 0))[0]
+  const ogImage = heroListing && heroListing.cover ? `${SITE_URL}${heroListing.cover}` : `${SITE_URL}/assets/logo.jpeg`
+
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'RealEstateAgent',
+      name: 'Narda Valderrama',
+      url: SITE_URL,
+      image: `${SITE_URL}/assets/logo.jpeg`,
+      logo: `${SITE_URL}/assets/logo.jpeg`,
+      telephone: WHATSAPP_E164,
+      description: SITE_DESCRIPTION,
+      areaServed: [
+        { '@type': 'City', name: 'Medellín' },
+        { '@type': 'City', name: 'Envigado' },
+        { '@type': 'City', name: 'Sabaneta' },
+        { '@type': 'City', name: 'Itagüí' },
+      ],
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Medellín',
+        addressRegion: 'Antioquia',
+        addressCountry: 'CO',
+      },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: SITE_TITLE,
+      url: SITE_URL,
+      inLanguage: 'es-CO',
+      description: SITE_DESCRIPTION,
+    },
+  ]
+
   return `<!DOCTYPE html>
-<html lang="es">
+<html lang="es-CO">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${escapeHtml(SITE_TITLE)}</title>
     <meta name="description" content="${escapeHtml(SITE_DESCRIPTION)}" />
     <meta name="theme-color" content="#0b3f4a" />
+    <link rel="canonical" href="${SITE_URL}/" />
     <meta property="og:title" content="${escapeHtml(SITE_TITLE)}" />
     <meta property="og:description" content="${escapeHtml(SITE_DESCRIPTION)}" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://nardavalderrama.com/" />
+    <meta property="og:url" content="${SITE_URL}/" />
+    <meta property="og:image" content="${escapeHtml(ogImage)}" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:site_name" content="Narda Valderrama" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${escapeHtml(SITE_TITLE)}" />
+    <meta name="twitter:description" content="${escapeHtml(SITE_DESCRIPTION)}" />
+    <meta name="twitter:image" content="${escapeHtml(ogImage)}" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -73,6 +126,7 @@ export function renderIndex(listings) {
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css?v=2026051102" />
+    <script type="application/ld+json">${jsonLdSafe(jsonLd)}</script>
   </head>
   <body>
     <a class="skip" href="#listings">Saltar al contenido</a>
@@ -179,30 +233,84 @@ export function renderDetail(listing) {
     .join('')
 
   const galleryThumbs = photos
-    .map(
-      (p, i) =>
-        `<button class="gallery__thumb${i === 0 ? ' is-active' : ''}" data-idx="${i}" aria-label="Foto ${i + 1}"><img src="${escapeHtml(p)}" alt="" decoding="async"></button>`
-    )
+    .map((p, i) => {
+      // Eager-load first 5 thumbs, lazy-load the rest — improves LCP on long galleries
+      const loadAttr = i < 5 ? '' : 'loading="lazy" '
+      return `<button class="gallery__thumb${i === 0 ? ' is-active' : ''}" data-idx="${i}" aria-label="Foto ${i + 1}"><img src="${escapeHtml(p)}" alt="" ${loadAttr}decoding="async"></button>`
+    })
     .join('')
 
   const ogTitle = `${listing.title} | ${price} COP`
   const cover = listing.cover || photos[0] || ''
+  const canonicalUrl = `${SITE_URL}/apartamentos/${listing.id}.html`
+  const absoluteImages = photos.slice(0, 8).map(p => `${SITE_URL}${p}`)
+
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: listing.title,
+    description: listing.description || `${listing.type} en ${formatLocation(listing)}. ${cardMetaLine(listing)}.`,
+    image: absoluteImages,
+    sku: listing.id,
+    brand: { '@type': 'Brand', name: 'Narda Valderrama' },
+    offers: listing.price_cop
+      ? {
+          '@type': 'Offer',
+          price: String(listing.price_cop),
+          priceCurrency: 'COP',
+          availability: 'https://schema.org/InStock',
+          url: canonicalUrl,
+          seller: { '@type': 'RealEstateAgent', name: 'Narda Valderrama', url: SITE_URL },
+        }
+      : undefined,
+    additionalProperty: [
+      listing.type && { '@type': 'PropertyValue', name: 'Tipo de inmueble', value: listing.type },
+      listing.bedrooms != null && listing.bedrooms > 0 && { '@type': 'PropertyValue', name: 'Habitaciones', value: String(listing.bedrooms) },
+      listing.baths != null && listing.baths > 0 && { '@type': 'PropertyValue', name: 'Baños', value: String(listing.baths) },
+      listing.area_m2 && { '@type': 'PropertyValue', name: 'Área construida', value: `${listing.area_m2} m²`, unitText: 'MTK' },
+      listing.estrato && { '@type': 'PropertyValue', name: 'Estrato', value: String(listing.estrato) },
+      listing.garage != null && listing.garage > 0 && { '@type': 'PropertyValue', name: 'Parqueaderos', value: String(listing.garage) },
+      listing.floor != null && listing.floor > 0 && { '@type': 'PropertyValue', name: 'Piso', value: String(listing.floor) },
+      listing.neighborhood && { '@type': 'PropertyValue', name: 'Zona', value: listing.neighborhood },
+      listing.city && { '@type': 'PropertyValue', name: 'Ciudad', value: listing.city },
+    ].filter(Boolean),
+  }
+  if (!productJsonLd.offers) delete productJsonLd.offers
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inmuebles', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: listing.title, item: canonicalUrl },
+    ],
+  }
+
+  const detailDesc = `${listing.type} en ${formatLocation(listing)}. ${price} COP. ${cardMetaLine(listing)}.`.replace(/\s+/g, ' ').trim()
+  const absoluteCover = cover ? `${SITE_URL}${cover}` : `${SITE_URL}/assets/logo.jpeg`
 
   return `<!DOCTYPE html>
-<html lang="es">
+<html lang="es-CO">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${escapeHtml(ogTitle)}</title>
-    <meta name="description" content="${escapeHtml(
-      `${listing.type} en ${formatLocation(listing)}. ${price} COP. ${cardMetaLine(listing)}.`
-    )}" />
+    <meta name="description" content="${escapeHtml(detailDesc)}" />
     <meta name="theme-color" content="#0b3f4a" />
+    <link rel="canonical" href="${canonicalUrl}" />
     <meta property="og:title" content="${escapeHtml(ogTitle)}" />
-    <meta property="og:description" content="${escapeHtml(`${listing.type} en ${formatLocation(listing)}`)}" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://nardavalderrama.com/apartamentos/${escapeHtml(listing.id)}.html" />
-    ${cover ? `<meta property="og:image" content="https://nardavalderrama.com${escapeHtml(cover)}" />` : ''}
+    <meta property="og:description" content="${escapeHtml(detailDesc)}" />
+    <meta property="og:type" content="product" />
+    <meta property="og:url" content="${canonicalUrl}" />
+    <meta property="og:image" content="${escapeHtml(absoluteCover)}" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:site_name" content="Narda Valderrama" />
+    <meta property="product:price:amount" content="${listing.price_cop || ''}" />
+    <meta property="product:price:currency" content="COP" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${escapeHtml(ogTitle)}" />
+    <meta name="twitter:description" content="${escapeHtml(detailDesc)}" />
+    <meta name="twitter:image" content="${escapeHtml(absoluteCover)}" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -210,6 +318,8 @@ export function renderDetail(listing) {
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../styles.css?v=2026051102" />
+    <script type="application/ld+json">${jsonLdSafe(productJsonLd)}</script>
+    <script type="application/ld+json">${jsonLdSafe(breadcrumbJsonLd)}</script>
   </head>
   <body>
     <a class="skip" href="#detail">Saltar al contenido</a>

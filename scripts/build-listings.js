@@ -107,10 +107,15 @@ function getDescription(html) {
   // Take the first <p>…</p> bundle after the header (sometimes wrapped <p><p>…</p></p>)
   const m = slice.match(/<\/h3>[\s\S]*?<p>([\s\S]*?)<\/p>\s*<\/div>/)
   if (!m) return ''
-  // Strip the duplicate inner <p> and "Código..." sentence
-  let text = m[1].replace(/<\/?p>/g, '\n').replace(/\s+/g, ' ').trim()
+  // Strip ALL HTML tags (some listings embed <div>/<span style=...> for emojis/styling)
+  let text = m[1]
+    .replace(/<\/?(p|br)\s*\/?>/gi, '\n') // line breaks
+    .replace(/<[^>]+>/g, '') // strip all other tags
+  text = decodeEntities(text)
+    .replace(/\s+/g, ' ') // collapse whitespace
+    .trim()
   text = text.replace(/^Código\.[^.]*\.\s*/i, '')
-  return decodeEntities(text)
+  return text
 }
 
 function buildTransformerUrl(key, width = 1200, height = 900) {
@@ -468,6 +473,54 @@ async function main() {
     await fs.writeFile(p, renderDetail(listing))
   }
   console.log(`Wrote ${listings.length} detail pages in ${OUT_DETAIL_DIR}/`)
+
+  // Generate sitemap.xml
+  const today = new Date().toISOString().slice(0, 10)
+  const urls = [
+    { loc: 'https://nardavalderrama.com/', priority: '1.0', changefreq: 'weekly' },
+    ...listings.map(l => ({
+      loc: `https://nardavalderrama.com/apartamentos/${l.id}.html`,
+      priority: '0.8',
+      changefreq: 'monthly',
+    })),
+  ]
+  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls
+  .map(
+    u => `  <url>
+    <loc>${u.loc}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`
+  )
+  .join('\n')}
+</urlset>
+`
+  await fs.writeFile(path.join(ROOT, 'sitemap.xml'), sitemapXml)
+  console.log(`Wrote sitemap.xml (${urls.length} URLs)`)
+
+  // robots.txt — explicit allow for search + AI bots, declare sitemap
+  const robotsTxt = `User-agent: *
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://nardavalderrama.com/sitemap.xml
+`
+  await fs.writeFile(path.join(ROOT, 'robots.txt'), robotsTxt)
+  console.log(`Wrote robots.txt`)
 
   console.log(`\nTotal: ${listings.length} listings`)
 }
